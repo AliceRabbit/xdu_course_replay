@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程列表</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        :root {
+            --primary-color: #AF2125;
+            --secondary-color: #FAFAFA;
+            --text-color: #333;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .course {
+            background: #fff;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .course:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .course div {
+            margin: 0 15px;
+            flex: 1;
+        }
+
+        .course h2 {
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 0 10px;
+            }
+
+            .course {
+                flex-direction: column;
+                text-align: center;
+                padding: 1rem;
+            }
+
+            .course div {
+                margin: 10px 0;
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin: 2rem 0;
+            font-weight: 700;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #388E3C;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>课程列表</h1>
+        {% for course in courses %}
+        <div class="course">
+            <div><h2>{{ course.courseName }}</h2></div>
+            <div><p>第{{ course.days }}周&nbsp;&nbsp;周{{ course.weekDay }}</p></div>
+            <div><p>第{{ course.jie }}节</p></div>
+            <div><p>教师: {{ course.teacherRealName }}</p></div>
+            <div><p>状态: {% if course.status == 2 %}
+                已上课
+            {% elif course.status == 0 %}
+                未上课
+            {% else %}
+                未知状态
+            {% endif %}</p></div>
+            <div>
+                <a href="/play?course_id={{ course.id }}&courseName={{ course.courseName|urlencode }}&days={{ course.days}}&weekDay={{ course.weekDay}}&jie={{ course.jie }}&teacherRealName={{ course.teacherRealName|urlencode }}" class="btn">播放课程</a>
+            </div>        
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

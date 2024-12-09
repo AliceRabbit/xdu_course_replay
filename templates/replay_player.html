@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>课堂视频回放</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1e1e2f;
+            margin: 0;
+            padding: 0;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .course-info {
+            text-align: center;
+            position: absolute;
+            margin-bottom: 20px;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000; /* 确保信息不会被其他元素遮挡 */
+            background-color: rgba(0, 0, 0, 0.7); /* 背景颜色，增加可读性 */
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+        .course-info h1 {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+        .course-info p {
+            font-size: 18px;
+            margin: 5px 0;
+        }
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: center;
+            width: 100%;
+            max-width: 1800px;
+            margin: 150px 0px 20px;
+            gap: 20px;
+        }
+        video {
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            transition: all 0.5s ease;
+        }
+        .main-player {
+            width: 60%;
+        }
+        .secondary-player {
+            width: 35%;
+        }
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .controls button {
+            background-color: #ff6b81;
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .controls button:hover {
+            background-color: #ff4757;
+            transform: translateY(-3px);
+        }
+        .main-player, .secondary-player {
+            position: relative;
+        }
+        .main-player::after, .secondary-player::after {
+            content: attr(data-label);
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0,0,0,0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .speed-controls {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .speed-controls button {
+            margin: 0 5px;
+            padding: 8px 15px;
+            font-size: 14px;
+            border: 2px solid transparent;
+        }
+
+        .speed-controls button.active {
+            border-color: #fff;
+            background-color: #ff4757;
+        }
+
+        .current-speed {
+            color: #fff;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+    </style>
+    <!-- 引入 hls.js -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body>
+    <div class="course-info">
+        <h1>{{ courseName }}</h1>
+        <p>教师: {{ teacherRealName }}&nbsp;&nbsp;&nbsp;&nbsp;第{{ days }}周&nbsp;周{{ weekDay }}&nbsp;第{{ jie }}节</p>
+    </div>
+    <div class="container">
+        <video id="mainPlayer" class="main-player" data-label="主播放器" controls></video>
+        <video id="secondaryPlayer" class="secondary-player" data-label="副播放器" controls></video>
+    </div>
+    <div class="controls">
+        <button onclick="switchPlayers()">切换主播放器</button>
+        <div class="speed-controls">
+            <button onclick="setPlaybackRate(0.5)">0.5x</button>
+            <button onclick="setPlaybackRate(1.0)">1.0x</button>
+            <button onclick="setPlaybackRate(1.5)">1.5x</button>
+            <button onclick="setPlaybackRate(2.0)">2.0x</button>
+            <span class="current-speed">当前速度: 1.0x</span>
+        </div>
+    </div>
+    <script>
+        const mainPlayer = document.getElementById('mainPlayer');
+        const secondaryPlayer = document.getElementById('secondaryPlayer');
+
+        // 初始化 HLS 播放器
+        if (Hls.isSupported()) {
+            const mainHls = new Hls();
+            mainHls.loadSource('{{ video_urls["ppt_video"] }}');
+            mainHls.attachMedia(mainPlayer);
+
+            const secondaryHls = new Hls();
+            secondaryHls.loadSource('{{ video_urls["teacher_track"] }}');
+            secondaryHls.attachMedia(secondaryPlayer);
+        } else if (mainPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+            mainPlayer.src = '{{ video_urls["ppt_video"] }}';
+            secondaryPlayer.src = '{{ video_urls["teacher_track"] }}';
+        }
+
+        // 副播放器默认静音
+        secondaryPlayer.muted = true;
+
+        function syncPlayers(event) {
+            if (event.type === 'play') {
+                secondaryPlayer.currentTime = mainPlayer.currentTime;
+                secondaryPlayer.play();
+            } else if (event.type === 'pause') {
+                secondaryPlayer.pause();
+            } else if (event.type === 'seeked') {
+                secondaryPlayer.currentTime = mainPlayer.currentTime;
+            }
+        }
+
+        mainPlayer.addEventListener('play', syncPlayers);
+        mainPlayer.addEventListener('pause', syncPlayers);
+        mainPlayer.addEventListener('seeked', syncPlayers);
+
+        function switchPlayers() {
+            // 添加过渡动画
+            mainPlayer.classList.add('transition');
+            secondaryPlayer.classList.add('transition');
+
+            // 交换播放器的类和标签
+            if (mainPlayer.classList.contains('main-player')) {
+                mainPlayer.classList.remove('main-player');
+                mainPlayer.classList.add('secondary-player');
+                mainPlayer.setAttribute('data-label', '副播放器');
+
+                secondaryPlayer.classList.remove('secondary-player');
+                secondaryPlayer.classList.add('main-player');
+                secondaryPlayer.setAttribute('data-label', '主播放器');
+            } else {
+                mainPlayer.classList.remove('secondary-player');
+                mainPlayer.classList.add('main-player');
+                mainPlayer.setAttribute('data-label', '主播放器');
+
+                secondaryPlayer.classList.remove('main-player');
+                secondaryPlayer.classList.add('secondary-player');
+                secondaryPlayer.setAttribute('data-label', '副播放器');
+            }
+
+            // 移除过渡动画类
+            setTimeout(() => {
+                mainPlayer.classList.remove('transition');
+                secondaryPlayer.classList.remove('transition');
+            }, 500);
+        }
+        function setPlaybackRate(rate) {
+            mainPlayer.playbackRate = rate;
+            secondaryPlayer.playbackRate = rate;
+            
+            // 更新当前速度显示
+            document.querySelector('.current-speed').textContent = `当前速度: ${rate}x`;
+            
+            // 更新按钮样式
+            const buttons = document.querySelectorAll('.speed-controls button');
+            buttons.forEach(button => {
+                if (button.textContent === rate + 'x') {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+        }
+        // 初始化时设置默认倍速
+        setPlaybackRate(1.0);
+    </script>
+</body>
+</html>

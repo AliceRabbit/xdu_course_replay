@@ -1,0 +1,8 @@
+headers:
+  User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+  Cookie: "<YOUR_COOKIE_HERE>"
+  Host: "newesxidian.chaoxing.com"
+data:
+  liveId: "<LIVE_ID>"
+  fid: "<FID>"
+  uId: "<UID>"
