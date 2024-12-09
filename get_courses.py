@@ -14,7 +14,6 @@ def fetch_courses():
     termId = get_current_termId()
     week = 4
     url = f"https://newesxidian.chaoxing.com/frontLive/listStudentCourseLivePage?fid={fid}&userId={userId}&week={week}&termYear={termYear}&termId={termId}&type=1"
-    # url = "https://newesxidian.chaoxing.com/frontLive/listStudentCourseLivePage?fid=16820&userId=323992114&week=3&termYear=2024&termId=1&type=1"
     response = requests.get(url, headers=headers)
     data = response.json()
     
