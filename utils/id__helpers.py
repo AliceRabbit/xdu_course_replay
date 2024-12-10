@@ -11,7 +11,7 @@ def extract_fid_uid_from_cookie(cookie_str):
         fid = None
     
     try:
-        uId = int(uid_match.group(2)) if uid_match else None
+        uId = int(uid_match.group(1)) if uid_match else None
     except ValueError:
         uId = None
     
