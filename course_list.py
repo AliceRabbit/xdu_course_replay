@@ -1,5 +1,8 @@
 import requests
 from utils.config import load_config
+from utils.id__helpers import extract_fid_uid_from_cookie
+import re
+
 
 def fetch_course_data(url, headers, data):
     """
@@ -47,14 +50,15 @@ def display_course_data(courses):
         print("-" * 40)
 
 
-def get_courses_list():
+def get_courses_list(liveId):
     # 配置请求参数
     config = load_config("config.yaml")
     if config is None:
         return
     url = "http://newesxidian.chaoxing.com/live/listSignleCourse"
     headers = config.get("headers")
-    data = config.get("data")
+    data = extract_fid_uid_from_cookie(headers['Cookie'])
+    data['liveId'] = liveId
 
     # 获取课程数据
     raw_data = fetch_course_data(url, headers, data)

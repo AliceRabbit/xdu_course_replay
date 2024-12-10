@@ -1,13 +1,24 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
+from get_courses import fetch_all_courses_data
 from course_list import get_courses_list
 from video_capturer import get_video_urls
 
 app = Flask(__name__)
 
+
 @app.route('/')
 def index():
-    courses = get_courses_list()
-    return render_template('index.html', courses=courses)
+    return render_template('index.html')
+
+@app.route('/api/courses')
+def get_courses():
+    courses_data = fetch_all_courses_data()
+    return jsonify(courses_data)
+@app.route('/course-details')
+def courseDetails():
+    liveId = request.args.get('liveId')
+    courses = get_courses_list(liveId)
+    return render_template('courseDetailsPage.html', courses=courses)
 
 @app.route('/play')
 def play():
