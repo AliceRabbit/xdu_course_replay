@@ -13,11 +13,17 @@ def index():
 @app.route('/api/courses')
 def get_courses():
     courses_data = fetch_all_courses_data()
+
+    if courses_data is None:
+        courses_data = {}
     return jsonify(courses_data)
 @app.route('/course-details')
 def courseDetails():
     liveId = request.args.get('liveId')
     courses = get_courses_list(liveId)
+
+    if courses is None:
+        return "获取课程录直播失败", 500
     return render_template('courseDetailsPage.html', courses=courses)
 
 @app.route('/play')
